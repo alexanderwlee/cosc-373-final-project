@@ -1,0 +1,57 @@
+\documentclass{article}
+
+\title{Bitcoin Presentation Notes}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+\begin{itemize}
+  \item Commerce on the Internet relies almost exclusively on financial
+    institutions serving as trusted third parties to process electronic
+    payments.
+  \item Problem: TODO
+\end{itemize}
+
+\section{Digital Signatures}
+
+\begin{itemize}
+  \item Scenario: Alice wants to send a message to Bob over a network. How can
+    Bob verify that the message he received was from Alice? Alice needs to sign
+    her message.
+  \item Desired property of signature: cannot be forged on a different message.
+  \item Both Alice and Bob each generate a public/private key pair for
+    themselves. Each key is some string of bits. Private keys are kept secret.
+  \item Producing a signature: $\mathsf{sign(message, privateKey)} =
+    \mathsf{signature}$.
+  \item Verifying a signature: $\mathsf{verify(message, signature, publicKey) =
+    true / false}$.
+  \item Only the owner of the private key can produce the signature.
+  \item No one can copy the signature and forge it on another message.
+  \item Signature is a 256 bit value. Hard to find a valid signature if you
+    don't know the secret key. There is no strategy better than guessing and
+    checking if random signatures are valid using the public key. There are
+    $2^{256}$ signatures to check; this is a very large number.
+\end{itemize}
+
+\section{Transactions}
+
+\begin{itemize}
+  \item Electronic coin: a chain of digital signatures.
+  \item Alice transfers a coin to Bob:
+    \begin{enumerate}
+      \item Alice computes the hash of previous transaction and Bob's public
+        key.
+      \item Alice signs the hash using her private key.
+      \item Alice adds her signature to the end of the coin.
+      \item Bob verifies that Alice transferred a coin to him using Alice's
+        public key.
+    \end{enumerate}
+  \item Problem: how to verify that Alice did not double-spend the coin?
+\end{itemize}
+
+\end{document}
