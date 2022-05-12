@@ -27,7 +27,7 @@ verify that the message he received was indeed from Alice.
 
 The main idea behind digital signatures is as follows. Both Alice and Bob each
 generate a \emph{private key} and \emph{public key} pair for themselves, where
-each key is a string of bits and private keys are kept secret (i.e., only Alice
+each key is a array of bits and private keys are kept secret (i.e., only Alice
 knows her private key and only Bob knows his private key). Producing a signature
 involves a function $\mathsf{sign(msg, priKey)}$, which takes Alice's message
 $\mathsf{msg}$ and private key $\mathsf{priKey}$ as inputs and outputs Alice's
@@ -40,16 +40,28 @@ We will not discuss how the $\mathsf{sign()}$ and $\mathsf{verify()}$ functions
 work in depth since such details are not the focus of this work.
 
 Digital signatures have two required properties. First, the authenticity of
-Alice's signature generated from her message and private key can be
-\emph{verified easily} using her corresponding public key. Secondly, it should
-be \emph{computationally infeasible} for someone like Eve to generate a valid
-signature for Alice without knowing Alice's private key. That is, Eve has no
-better strategy than guessing and checking if random signatures are valid using
-Alice's message and public key. Assuming a 256 bit signature, the aforementioned
-brute force strategy would require Eve to check $2^{256}$ signatures in the
-worst case.
+Alice's signature generated from her message and private key can be verified
+easily using her corresponding public key. Secondly, it should be
+computationally infeasible for someone like Eve to generate a valid signature
+for Alice without knowing Alice's private key. That is, Eve has no better
+strategy than guessing and checking if random signatures are valid using Alice's
+message and public key. Assuming a 256 bit signature, the aforementioned brute
+force strategy would require Eve to check $2^{256}$ signatures in the worst
+case.
 
 \subsection{Cryptographic Hash Functions}
+
+A \emph{cryptographic hash function} is a hash function that takes as input data
+(i.e., a \emph{message}) of an arbitrary size and outputs a bit array (i.e.,
+\emph{hash}) of a fixed size. In the case of the SHA256 cryptographic hash
+function, the hash has a length of 256 bits.
+
+Cryptographic hash functions ideally should have the following properties.
+First, computing the hash of a given message should be quick. Second, generating
+the message from only the hash should be computationally infeasible. Third,
+finding two different messages that map to the same hash under the function
+should also be infeasible. Fourth, slightly changing the message should change
+the hash so much such that the old and new hashes seem uncorrelated.
 
 \section{Bitcoin}
 
