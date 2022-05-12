@@ -26,13 +26,13 @@ to her message and send the message and signature to Bob, which allows Bob to
 verify that the message he received was indeed from Alice.
 
 The main idea behind digital signatures is as follows. Both Alice and Bob each
-generate a private/public key pair for themselves, where each key is a string of
-bits and private keys are kept secret (i.e., only Alice knows her private key
-and only Bob knows his private key). Producing a signature involves a function
-$\mathsf{sign(msg, priKey)}$, which takes Alice's message $\mathsf{msg}$ and
-private key $\mathsf{priKey}$ as inputs and outputs Alice's signature
-$\mathsf{sig}$. Similarly, verifying the authenticity of the received message
-involves a function $\mathsf{verify(msg, sig, pubKey)}$, which takes the
+generate a \emph{private key} and \emph{public key} pair for themselves, where
+each key is a string of bits and private keys are kept secret (i.e., only Alice
+knows her private key and only Bob knows his private key). Producing a signature
+involves a function $\mathsf{sign(msg, priKey)}$, which takes Alice's message
+$\mathsf{msg}$ and private key $\mathsf{priKey}$ as inputs and outputs Alice's
+signature $\mathsf{sig}$. Similarly, verifying the authenticity of the received
+message involves a function $\mathsf{verify(msg, sig, pubKey)}$, which takes the
 received message $\mathsf{msg}$, the signature $\mathsf{sig}$, and Alice's
 public key $\mathsf{pubKey}$ as inputs and outputs \emph{true} if the signature
 was produced using Alice's message and private key, and \emph{false} otherwise.
@@ -40,14 +40,14 @@ We will not discuss how the $\mathsf{sign()}$ and $\mathsf{verify()}$ functions
 work in depth since such details are not the focus of this work.
 
 Digital signatures have two required properties. First, the authenticity of
-Alice's signature generated from her message and private key can be verified
-easily using her corresponding public key. Secondly, it should be
-computationally infeasible for someone like Eve to generate a valid signature
-for Alice without knowing Alice's private key. That is, Eve has no better
-strategy than guessing and checking if random signatures are valid using Alice's
-message and public key. Assuming a 256 bit signature, the aforementioned brute
-force strategy would require Eve to check $2^{256}$ signatures in the worst
-case.
+Alice's signature generated from her message and private key can be
+\emph{verified easily} using her corresponding public key. Secondly, it should
+be \emph{computationally infeasible} for someone like Eve to generate a valid
+signature for Alice without knowing Alice's private key. That is, Eve has no
+better strategy than guessing and checking if random signatures are valid using
+Alice's message and public key. Assuming a 256 bit signature, the aforementioned
+brute force strategy would require Eve to check $2^{256}$ signatures in the
+worst case.
 
 \subsection{Cryptographic Hash Functions}
 
