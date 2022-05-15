@@ -61,7 +61,11 @@ First, computing the hash of a given message should be quick. Second, generating
 the message from only the hash should be computationally infeasible. Third,
 finding two different messages that map to the same hash under the function
 should also be infeasible. Fourth, slightly changing the message should change
-the hash so much such that the old and new hashes seem uncorrelated.
+the hash so much such that the old and new hashes seem uncorrelated. Similar to
+digital signatures, the only way to find a message that produces a given hash is
+to via a brute force approach of guessing and checking possible messages. Again,
+assuming a 256 bit hash, this strategy would require $2^{256}$ hashes to check
+in the worst case.
 
 \section{Bitcoin}
 
