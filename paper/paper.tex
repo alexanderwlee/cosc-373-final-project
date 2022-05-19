@@ -1,6 +1,7 @@
 \documentclass{article}
 
-\usepackage{hyperref}
+\usepackage{hyperref} % for reference links
+\usepackage{natbib} % for bibliography
 
 \title{COSC-373 Final Report: Bitcoin}
 \author{Lee Jiaen, Hyery Yoo, and Alexander Lee}
@@ -10,7 +11,24 @@
 \maketitle
 
 \section{Introduction}
-Before Bitcoin, the only commerce system on the internet relied heavily on trusted third parties to process electronic payments. Suppose Alice, a buyer, wants to buy an item from Bob's e-commerce store. Alice would need to make an online payment that relies on a financial institution or some trusted third party to process the transaction. However, Alice may not trust such third parties. Alice wishes for a way where her online payment can be sent directly to Bob without going through a third party. While the previous system worked for most transactions, it had a few significant inefficiency problems. Trusted third-party financial intuitions cannot avoid mediating disputes, making it impossible to have completely non-reversible transactions. Therefore, the need for trust increases, and "a certain percentage of fraud is accepted as unavoidable" (Nakamoto 2008). One could avoid these issues with the use of physical currency. However, like Alice, many people would prefer a decentralized version of electronic cash that allows any two willing parties to transact directly without a trusted third party. This is the goal and motivation of Bitcoin. The following paper describes how Bitcoin, an electronic payment system, is based on cryptographic proof instead of trust, allowing for direct transactions without trusted third parties or financial institutions.
+Before Bitcoin, the only commerce system on the internet relied heavily on
+trusted third parties to process electronic payments. Suppose Alice, a buyer,
+wants to buy an item from Bob's e-commerce store. Alice would need to make an
+online payment that relies on a financial institution or some trusted third
+party to process the transaction. However, Alice may not trust such third
+parties. Alice wishes for a way where her online payment can be sent directly to
+Bob without going through a third party. While the previous system worked for
+most transactions, it had a few significant inefficiency problems. Trusted
+third-party financial intuitions cannot avoid mediating disputes, making it
+impossible to have completely non-reversible transactions. Therefore, the need
+for trust increases, and ``a certain percentage of fraud is accepted as
+unavoidable''~\citep{Nakamoto08}. One could avoid these issues with the use of
+physical currency. However, like Alice, many people would prefer a decentralized
+version of electronic cash that allows any two willing parties to transact
+directly without a trusted third party. This is the goal and motivation of
+Bitcoin. The following paper describes how Bitcoin, an electronic payment
+system, is based on cryptographic proof instead of trust, allowing for direct
+transactions without trusted third parties or financial institutions.
 
 \section{Preliminaries}
 
@@ -80,19 +98,59 @@ together to track each address' balance in bitcoins.
 
 \section{Transactions}
 
-Suppose we have a \emph{transaction}, where Alice is the sender and Bob is the recipient. What is a transaction, and how does it work?
+Suppose we have a \emph{transaction}, where Alice is the sender and Bob is the
+recipient. What is a transaction, and how does it work?
 
-A \emph{transaction} is a data structure that describes the transfer of bitcoins from spenders to recipients. The transaction consists of several inputs and outputs. More specifically, the inputs are a tuple consisting of a reference to a previously created output and a signature to the spending condition, proving that the transaction creator has the permission to spend the referenced output. Meanwhile, the outputs are a tuple composed of an amount in bitcoins and a spending condition requiring a valid signature associated with the private key of an address. The outputs of a transaction may assign less than the sum of inputs, in which case the difference is called the transaction fee. The transaction fee is used to incentivize other participants in the system.
+A \emph{transaction} is a data structure that describes the transfer of bitcoins
+from spenders to recipients. The transaction consists of several inputs and
+outputs. More specifically, the inputs are a tuple consisting of a reference to
+a previously created output and a signature to the spending condition, proving
+that the transaction creator has the permission to spend the referenced output.
+Meanwhile, the outputs are a tuple composed of an amount in bitcoins and a
+spending condition requiring a valid signature associated with the private key
+of an address. The outputs of a transaction may assign less than the sum of
+inputs, in which case the difference is called the transaction fee. The
+transaction fee is used to incentivize other participants in the system.
 
-An output has two states, unspent and spent, and can only be spent at most once. When we sum up the bitcoin amounts of unspent outputs associated with an address, we get the address balance, and the set of these unspent transaction outputs is the shared state of Bitcoin. 
+An output has two states, unspent and spent, and can only be spent at most once.
+When we sum up the bitcoin amounts of unspent outputs associated with an
+address, we get the address balance, and the set of these unspent transaction
+outputs is the shared state of Bitcoin.
 
-Transactions can be in one of two states: unconfirmed or confirmed. Unconfirmed transactions are incoming transactions from the broadcast that are added to a pool of transactions called the memory pool. All transactions are broadcasted to the entire Bitcoin network, with each node deciding whether or not to accept the transaction. As a result, every node in the Bitcoin network holds a complete replica of the shared state. The local replicas of this shared state may temporarily diverge, but consistency is eventually reestablished. 
+Transactions can be in one of two states: unconfirmed or confirmed. Unconfirmed
+transactions are incoming transactions from the broadcast that are added to a
+pool of transactions called the memory pool. All transactions are broadcasted to
+the entire Bitcoin network, with each node deciding whether or not to accept the
+transaction. As a result, every node in the Bitcoin network holds a complete
+replica of the shared state. The local replicas of this shared state may
+temporarily diverge, but consistency is eventually reestablished.
 
-Thus, for the transaction between Alice to Bob, the inputs are Alice's previous unspent outputs and Alice's digital signature, which was created using her private key. Meanwhile, the outputs of this transaction are the amount in Bitcoins for Bob and the spending condition requiring a valid signature associated with the private key of Bob's address. The transaction is then broadcasted in the Bitcoin network and processed by every node that receives it. 
+Thus, for the transaction between Alice to Bob, the inputs are Alice's previous
+unspent outputs and Alice's digital signature, which was created using her
+private key. Meanwhile, the outputs of this transaction are the amount in
+Bitcoins for Bob and the spending condition requiring a valid signature
+associated with the private key of Bob's address. The transaction is then
+broadcasted in the Bitcoin network and processed by every node that receives it.
 
 \section{Doublespending Problem}
 
-Suppose we now have another transaction from Alice to Charlie that attempts to spend the same output as the transaction from Alice to Bob. \emph{Doublespending} is a situation in which multiple transactions attempt to spend the same output. However, only one transaction can be valid because outputs can only be spent at most once. Doublespending occurs because the order in which transactions are seen may not be the same for all nodes, and the validity of transactions depends on the order in which the transactions arrive. If a node sees two conflicting transactions, it considers only the first transaction it sees valid and the second invalid. The second seen transaction is invalid since it tries to spend an already present output. As a result, different nodes in the network accept different transactions, making their shared states inconsistent. If the problem of doublespending is not resolved, the shared states of the Bitcoin network diverge. The problem is that there is nothing preventing nodes from locally accepting different transactions that spend the same output. Therefore, a conflict resolution mechanism is needed to decide which of the conflicting transactions (only one transaction) should be accepted by every node to achieve eventual consistency in the network.
+Suppose we now have another transaction from Alice to Charlie that attempts to
+spend the same output as the transaction from Alice to Bob.
+\emph{Doublespending} is a situation in which multiple transactions attempt to
+spend the same output. However, only one transaction can be valid because
+outputs can only be spent at most once. Doublespending occurs because the order
+in which transactions are seen may not be the same for all nodes, and the
+validity of transactions depends on the order in which the transactions arrive.
+If a node sees two conflicting transactions, it considers only the first
+transaction it sees valid and the second invalid. The second seen transaction is
+invalid since it tries to spend an already present output. As a result,
+different nodes in the network accept different transactions, making their
+shared states inconsistent. If the problem of doublespending is not resolved,
+the shared states of the Bitcoin network diverge. The problem is that there is
+nothing preventing nodes from locally accepting different transactions that
+spend the same output. Therefore, a conflict resolution mechanism is needed to
+decide which of the conflicting transactions (only one transaction) should be
+accepted by every node to achieve eventual consistency in the network.
 
 \section{Proof-of-Work}
 
@@ -100,6 +158,7 @@ Suppose we now have another transaction from Alice to Charlie that attempts to s
 
 \section{Conclusion}
 
-\section{References}
-https://bitcoin.org/bitcoin.pdf 
+\bibliographystyle{plainnat}
+\bibliography{paper.bib}
+
 \end{document}
