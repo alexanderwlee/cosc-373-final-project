@@ -1,8 +1,13 @@
 \documentclass{article}
 
 \usepackage{amsmath}
-\usepackage{hyperref} % for reference links
-\usepackage{natbib} % for bibliography
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\SetArgSty{textnormal}
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{cleveref}
+\crefname{algorithm}{Alg.}{Algs.}
+\Crefname{algorithm}{Algorithm}{Algorithms}
 
 \title{COSC-373 Final Report: Bitcoin}
 \author{Lee Jiaen, Hyery Yoo, and Alexander Lee}
@@ -13,42 +18,42 @@
 
 \section{Introduction}
 
-Before Bitcoin, the only commerce system on the internet relied heavily on
-trusted third parties to process electronic payments. Suppose Alice, a buyer,
-wants to buy an item from Bob's e-commerce store. Alice would need to make an
-online payment that relies on a financial institution or some trusted third
+Before Bitcoin, e-commerce on the internet relied heavily on trusted third
+parties to process electronic payments. For example, suppose Alice, a buyer,
+wants to purchase an item from Bob's e-commerce store. Alice would need to make
+an online payment that relies on a financial institution or some trusted third
 party to process the transaction. However, Alice may not trust such third
-parties. Alice wishes for a way where her online payment can be sent directly to
-Bob without going through a third party. While the previous system worked for
-most transactions, it had a few significant inefficiency problems. Trusted
-third-party financial intuitions cannot avoid mediating disputes, making it
-impossible to have completely non-reversible transactions. Therefore, the need
-for trust increases, and ``a certain percentage of fraud is accepted as
-unavoidable''~\citep{Nakamoto08}. One could avoid these issues with the use of
-physical currency. However, like Alice, many people would prefer a decentralized
-version of electronic cash that allows any two willing parties to transact
-directly without a trusted third party. This is the goal and motivation of
-Bitcoin. The following paper describes how Bitcoin, an electronic payment
-system, is based on cryptographic proof instead of trust, allowing for direct
-transactions without trusted third parties or financial institutions.
+parties and wish for a way where her online payment can be sent directly to
+Bob without going through a third party. While the previously mentioned payment
+system works for most transactions, it has a few significant problems with
+efficiency. Trusted third-party financial intuitions cannot avoid mediating
+disputes, making it impossible to have completely non-reversible transactions.
+Therefore, the need for trust increases, and ``a certain percentage of fraud is
+accepted as unavoidable''~\citep{Nakamoto08}. One could avoid these issues with
+the use of physical currency. However, like Alice, many people would prefer a
+decentralized version of electronic cash that allows any two willing parties to
+transact directly without a trusted third party. This is the motivation behind
+Bitcoin. This report describes how Bitcoin, an electronic payment system, is
+based on cryptographic proof instead of trust, allowing for direct transactions
+without trusted third parties or financial institutions.
 
 \section{Preliminaries}
 
-To understand Bitcoin, we first need to develop an understanding of the
-fundamental building-blocks behind it: digital signatures and cryptographic hash
+To understand Bitcoin, we first need to develop an understanding of its
+fundamental building-blocks: digital signatures and cryptographic hash
 functions.
 
 \subsection{Digital Signatures}
 
-Suppose for example that Alice wants to send a message to Bob over a network.
+Suppose for instance that Alice wants to send a message to Bob over a network.
 How can Bob ensure that the message he received was from Alice and not from a
 malicious actor like Eve? What Alice can do is append a \emph{digital signature}
-to her message and send the message and signature to Bob, which allows Bob to
-verify that the message he received was indeed from Alice.
+to her message and send the message and signature to Bob, allowing Bob to verify
+that the message he received was indeed from Alice.
 
 The main idea behind digital signatures is as follows. Both Alice and Bob each
 generate a \emph{private key} and \emph{public key} pair for themselves, where
-each key is a array of bits and private keys are kept secret (i.e., only Alice
+each key is an array of bits and private keys are kept secret (i.e., only Alice
 knows her private key and only Bob knows his private key). Producing a signature
 involves a function $\mathsf{sign(msg, priKey)}$, which takes Alice's message
 $\mathsf{msg}$ and private key $\mathsf{priKey}$ as inputs and outputs Alice's
@@ -58,7 +63,7 @@ received message $\mathsf{msg}$, the signature $\mathsf{sig}$, and Alice's
 public key $\mathsf{pubKey}$ as inputs and outputs \emph{true} if the signature
 was produced using Alice's message and private key, and \emph{false} otherwise.
 We will not discuss how the $\mathsf{sign()}$ and $\mathsf{verify()}$ functions
-work in depth since such details are not the focus of this work.
+work in depth since such details are not the focus of this report.
 
 Digital signatures have two required properties. First, the authenticity of
 Alice's signature generated from her message and private key can be verified
@@ -84,7 +89,7 @@ finding two different messages that map to the same hash under the function
 should also be infeasible. Fourth, slightly changing the message should change
 the hash so much such that the old and new hashes seem uncorrelated. Similar to
 digital signatures, the only way to find a message that produces a given hash is
-to via a brute force approach of guessing and checking possible messages. Again,
+via a brute force approach of guessing and checking possible messages. Again,
 assuming a 256 bit hash, this strategy would require $2^{256}$ hashes to check
 in the worst case.
 
@@ -93,125 +98,223 @@ in the worst case.
 The \emph{Bitcoin network} is a randomly connected overlay network of a few
 thousand nodes, where nodes are controlled by various owners and perform the
 same operation. In other words, the network is a homogeneous network without
-central control. Each user of Bitcoin generates a private/public key pair. A
+central control. Each user of Bitcoin generates a private/public key pair, and a
 user is identified by their \emph{address}, which is derived from their public
 key and used to receive funds in Bitcoin. All nodes in the Bitcoin network work
 together to track each address' balance in bitcoins.
 
 \section{Transactions}
 
-Suppose we have a \emph{transaction}, where Alice is the sender and Bob is the
-recipient. What is a transaction, and how does it work?
+Suppose we have a transaction in bitcoins, where Alice is the sender and Bob is
+the recipient. What is a transaction in this case?
 
 A \emph{transaction} is a data structure that describes the transfer of bitcoins
-from spenders to recipients. The transaction consists of several inputs and
-outputs. More specifically, the inputs are a tuple consisting of a reference to
-a previously created output and a signature to the spending condition, proving
-that the transaction creator has the permission to spend the referenced output.
-Meanwhile, the outputs are a tuple composed of an amount in bitcoins and a
+from senders to recipients. The transaction consists of several inputs and
+outputs. Each \emph{output} is a tuple composed of an amount in bitcoins and a
 spending condition requiring a valid signature associated with the private key
-of an address. The outputs of a transaction may assign less than the sum of
-inputs, in which case the difference is called the transaction fee. The
-transaction fee is used to incentivize other participants in the system.
+of an address. Meanwhile, each \emph{input} is a tuple consisting of a reference
+to a previously created output and a signature to the spending condition,
+proving that the transaction creator has the permission to spend the referenced
+output. An output has two states, \emph{unspent} and \emph{spent}, and can only
+be spent at most once. The sum of the unspent outputs associated with an address
+is the \emph{address balance}, and the set of these unspent transaction outputs
+(UTXO) is the shared state of Bitcoin. That is, every node in the Bitcoin
+network holds a complete replica of the shared state. The local replicas of this
+shared state may temporarily diverge, but consistency is eventually
+re-established. For a given transaction, the inputs result in the referenced
+outputs spent (i.e., removed from the UTXO), and the new outputs are added to
+the UTXO.\@ More specifically, inputs reference the output that is being spent
+by a $(h, i)$ tuple, where $h$ is the hash of the transaction that created the
+output, and $i$ is the index of the output in that transaction.
 
-An output has two states, unspent and spent, and can only be spent at most once.
-When we sum up the bitcoin amounts of unspent outputs associated with an
-address, we get the address balance, and the set of these unspent transaction
-outputs is the shared state of Bitcoin.
+All transactions are broadcasted to the Bitcoin network and processed by every
+node that receives them. Transactions can be in one of two states:
+\emph{unconfirmed} or \emph{confirmed}. Incoming transactions are unconfirmed
+and added to a pool of transactions referred to the \emph{memory pool}. We will
+discuss how transactions are confirmed in \cref{sec:pow}.
 
-Transactions can be in one of two states: unconfirmed or confirmed. Unconfirmed
-transactions are incoming transactions from the broadcast that are added to a
-pool of transactions called the memory pool. All transactions are broadcasted to
-the entire Bitcoin network, with each node deciding whether or not to accept the
-transaction. As a result, every node in the Bitcoin network holds a complete
-replica of the shared state. The local replicas of this shared state may
-temporarily diverge, but consistency is eventually reestablished.
+Returning to our example, for the transaction between Alice to Bob, the inputs
+are Alice's previous unspent outputs and Alice's digital signature, which was
+created using her private key. Meanwhile, the outputs of this transaction are
+the amount in Bitcoins for Bob and the spending condition requiring a valid
+signature associated with the private key of Bob's address. The transaction is
+then broadcasted to the Bitcoin network and processed by every node that
+receives it.
 
-Thus, for the transaction between Alice to Bob, the inputs are Alice's previous
-unspent outputs and Alice's digital signature, which was created using her
-private key. Meanwhile, the outputs of this transaction are the amount in
-Bitcoins for Bob and the spending condition requiring a valid signature
-associated with the private key of Bob's address. The transaction is then
-broadcasted in the Bitcoin network and processed by every node that receives it.
+\section{The Doublespending Problem}
 
-\section{Doublespending Problem}
-
-Suppose we now have another transaction from Alice to Charlie that attempts to
-spend the same output as the transaction from Alice to Bob.
-\emph{Doublespending} is a situation in which multiple transactions attempt to
+Now suppose there is a transaction from Alice to Charlie that attempts to spend
+the same output as the transaction from Alice to Bob. Observe that, for now,
+nothing prevents nodes in the Bitcoin network to locally accept different
+transactions that spend the same output, i.e., doublespend. More formally,
+\emph{doublespending} is a situation in which multiple transactions attempt to
 spend the same output. However, only one transaction can be valid because
 outputs can only be spent at most once. Doublespending occurs because the order
-in which transactions are seen may not be the same for all nodes, and the
+in which transactions are processed may not be the same for all nodes, and the
 validity of transactions depends on the order in which the transactions arrive.
-If a node sees two conflicting transactions, it considers only the first
-transaction it sees valid and the second invalid. The second seen transaction is
-invalid since it tries to spend an already present output. As a result,
-different nodes in the network accept different transactions, making their
-shared states inconsistent. If the problem of doublespending is not resolved,
-the shared states of the Bitcoin network diverge. The problem is that there is
-nothing preventing nodes from locally accepting different transactions that
-spend the same output. Therefore, a conflict resolution mechanism is needed to
-decide which of the conflicting transactions (only one transaction) should be
-accepted by every node to achieve eventual consistency in the network.
+If a node sees two conflicting transactions (i.e., transactions that spend the
+same output), the node only considers the first transaction it sees valid and
+the second invalid. The second transaction seen is invalid since it tries to
+spend an already spent output. As a result, different nodes in the network may
+accept different transactions, making their shared states inconsistent. If the
+problem of doublespending is not resolved, the shared states of the Bitcoin
+network diverge. Therefore, a conflict resolution mechanism is needed to decide
+which of the conflicting transactions should be accepted by every node to
+achieve eventual consistency in the network.
 
-\section{Proof-of-Work}
+\section{Processing a Transaction}
 
-Bitcoin solves the double-spending problem using \emph{Proof-of-Work} (PoW). PoW
-is a mechanism in which one party can prove to another that it has spent a
-specific amount of computational effort by presenting a nonce $x$ (a bitstring)
-to the PoW function $F_d(c,x)$, where $d$ is the difficulty (a positive number)
-and $c$ is the challenge (a bitstring). Another party can confirm this PoW by
-quickly checking that $F_d(c,x) =$ true for the given $x$. In general terms,
-suppose that Alice and Bob both know a PoW function $F_d(c,x)$ with $d$ and $c$
-given. Alice expends a certain amount of computation to find a $x$ such that
-$F_d(c,x) =$ true. Alice presents her solution $x$ to Bob, and Bob checks the
-solution by computing $F_d(c,x)$. The PoW function must be defined such that
-verifying a solution $x$ is fast. Through this process, Alice proves to Bob that
-she has expended the amount of computational work specified by difficulty $d$.
+Before we continue with discussing the solution to the doublespending problem,
+we first summarize how a node processes an incoming transaction (see
+\cref{algo:proctrans}). First, the node receives a transaction $t$
+(\cref{algline:rectrans}). Then, for each input $(h, i)$ in transaction $t$
+(where $h$ is the hash of the transaction that created the referenced output,
+and $i$ is the index of the output in that transaction), if $(h, i)$ is not in
+the node's local set of unspent transaction outputs or the signature for the
+output is invalid (\cref{algline:outputorsig}), then transaction $t$ is dropped
+and the node halts. Next, if the sum of the values of inputs is less than the
+sum of values of the new outputs (\cref{algline:sums}), then transaction $t$ is
+dropped and the node halts since one cannot spend more than they have. Then, for
+each input $(h, i)$ in transaction $t$, $(h, i)$ is removed from the node's
+local set of unspent transaction outputs (\cref{algline:remove}). Finally,
+transaction $t$ is appended to the node's local history of transactions and $t$
+is broadcasted to its neighbors in the Bitcoin network.
 
-What does PoW look like in the context of Bitcoin? First, we must understand
-blocks. A \emph{block} is a data structure that consists of a list of
-transactions, a reference to a previous block, and a nonce. Reference to
-previous block links blocks together such that they form a blockchain. A block
-can be added to a chain by a node (called \emph{mining}) when it collects
-transactions from the network and finds a valid nonce $x$ that satisfies the
-Bitcoin PoW function:
+\begin{algorithm}
+  \caption{Process Transaction}\label{algo:proctrans}
+  \DontPrintSemicolon%
+
+  Receive transaction $t$\;\label{algline:rectrans}
+  \ForEach{input $(h, i)$ in $t$}{
+    \If{output $(h, i)$ not in local UTXO \textbf{or} signature
+      invalid}{\label{algline:outputorsig}
+      Drop $t$ and stop\;
+    }
+  }
+  \If{sum of values of inputs $<$ sum of values of new
+    outputs}{\label{algline:sums}
+    Drop $t$ and stop\;
+  }
+  \ForEach{input $(h, i)$ in $t$}{
+    Remove $(h, i)$ from local UTXO\;\label{algline:remove}
+  }
+  Append $t$ to local history\;
+  Forward $t$ to neighbors in the Bitcoin network\;
+\end{algorithm}
+
+\section{Proof-of-Work}\label{sec:pow}
+
+Bitcoin solves the doublespending problem using \emph{Proof-of-Work} (PoW), a
+mechanism in which one party can prove to another that it has spent a specific
+amount of computational effort by presenting a nonce $x$ (a bit-string) to the
+PoW function $F_d(c,x) \to \{true, false\}$, where $d$ is the difficulty (a
+positive number) and $c$ is the challenge (a bit-string). Another party can
+confirm this PoW by quickly checking that $F_d(c,x) = true$ for the given $x$.
+For instance, suppose that Alice and Bob both know a PoW function $F_d(c,x)$
+with $d$ and $c$ given. Alice expends a certain amount of computation to find a
+$x$ such that $F_d(c,x) = true$. Alice presents her solution $x$ to Bob, and Bob
+checks the solution by computing $F_d(c,x)$ and seeing that the functions output
+is $true$. The PoW function must be defined such that verifying a solution $x$
+is fast. Through this process, Alice proves to Bob that she has expended the
+amount of computational work specified by difficulty $d$.
+
+What does PoW look like in the context of Bitcoin? First, we must understand the
+notion of a block in Bitcoin. A \emph{block} is a data structure that consists
+of a list of transactions, a reference to a previous block, and a nonce. The
+list of transactions are the transactions the node has accepted to its memory
+pool since the previous block. Thus, a block encodes incremental changes to the
+local state of the node. A node finds a block by finding a valid nonce $x$ that
+satisfies the Bitcoin PoW function:
 \[
-  F_d (c,x) = \text{SHA256}(\text{SHA256}(c|x)) < \frac{2^{224}}{d}.
+  F_d(c,x) = \text{SHA256}(\text{SHA256}(c|x)) < \frac{2^{224}}{d}.
 \]
-Simply put, a node must find a value $x$ that, when concatenated with a
-node-specific challenge $c$ and hashed with the hash function SHA256 twice,
-returns a hash that starts with a fixed number of zeroes. SHA256 is a
-cryptographic hash function, so a valid nonce can only be found by iterating
-over all possible values of $x$, requiring significant computational work to be
-put in. Suppose Alice is a node who puts in the computational effort to find a
-valid nonce $x$ and broadcasts the block containing $x$ to other nodes. Alice’s
-PoW can be verified by another node Bob who sees Alice’s block. Bob is given the
-values of $c$ and $x$, so he can quickly compute the hash and verify that the
-result starts with the required number of zeroes.
+This process is called \emph{mining}. Simply put, a node must find a value $x$
+that, when concatenated with a node-specific challenge $c$ and hashed twice with
+the SHA256 hash function, returns a hash that starts with a fixed number of
+zeroes. SHA256 is a cryptographic hash function, so a valid nonce can only be
+found by iterating over all possible values of $x$, requiring significant
+computational work. Once a node finds a valid nonce for the block, the block is
+broadcasted to the node's neighbors. Transactions contained in a block are said
+to be \emph{confirmed} by that block. The process for finding a block is
+summarized in \cref{algo:findblock}.
 
-\section{Network}
+To make concept of PoW more concrete, suppose Alice is a node who puts in the
+computational effort to find a valid nonce $x$ and broadcasts the block
+containing $x$ to other nodes. Alice’s PoW can be verified by another node Bob
+who sees Alice’s block. Bob is given the values of $c$ and $x$, so he can
+quickly compute the hash and verify that the result starts with the required
+number of zeroes.
 
-The Bitcoin network operates by each node in the network executing the same set
-of protocols. All transactions are broadcasted to the network, and every node
-works on collecting new transactions from the network into a block and finding a
-valid nonce for the block. When a node finds the valid nonce, it broadcasts the
-block to the network, adding the block to the end of the chain in effect. When
-another node in the network learns about the new block, it checks that all
-transactions in the block are valid. If they are, it accepts the block and works
-an extending the chain by creating a new block with the hash of the accepted
-block.
+\begin{algorithm}
+  \caption{Find Block}\label{algo:findblock}
+  \DontPrintSemicolon%
 
-A goal of the Bitcoin network is for all its nodes to agree on a single state of
-the network. The nodes achieve this by accepting the longest chain they see as
-the true state of the network. If a node receives two conflicting versions of a
-block, it works on extending the first block it receives and saves the other
+  \SetKwRepeat{Do}{do}{while}
+  \KwIn{Nonce $x = 0$, challenge $c$, difficulty $d$, previous block $b_{t-1}$}
+
+  \While{$F_d(c,x) = false$}{
+    $x = x + 1$\;
+  }
+  Broadcast block $b_t = (memory\ pool, b_{t-1}, x)$\;
+\end{algorithm}
+
+\section{Receive Block}
+
+A primary goal of the Bitcoin network is for all its nodes to agree on a single
+state of the network. To do this, the blocks build a tree with their reference
+to a previous block, where the tree's root is known as the \emph{genesis block}.
+The longest path from the genesis block to the leaf of the tree is called the
+\emph{blockchain}. Eventual consistency is achieved by accepting the longest
+path in the tree (i.e., the blockchain) as the true state of the network.
+Branches are formed if a node receives two conflicting versions of a block. In
+this case, it works on extending the first block it receives and saves the other
 block as a branch. If the node later learns that the branch has become longer
 than the chain it was working on, it switches to extending the branch. Because
 every block requires PoW in order to be added to the chain, the longest chain in
 the network represents the greatest amount of collective computational effort,
 i.e., majority decision. All nodes eventually receive and accept the longest
-chain, so the network reaches consistency.
+chain, so the network reaches consistency. More formally,
+\cref{algo:receiveblock} describes how a node updates its local state once it
+receive a block. We define the height $h_b$ as the path length from the genesis
+block to block $b$. Namely, we denote the node's current head as block $b_{max}$
+with height $h_{max}$. First, the node receive block $b$
+(\cref{algline:recblock}). Then, the node connects block $b$ in the tree as the
+child of its parent $p$ at height $h_b = h_p + 1$. If the height $h_b$ of block
+$b$ is larger that the height $h_{max}$ of the node's current head at block
+$b_{max}$ (\cref{algline:height}), then the head block and height are updated
+appropriately, the node computes the UTXO for the path leading to the new head
+block $b_{max}$, and the memory pool is cleaned up.
+
+\begin{algorithm}
+  \caption{Receive Block}\label{algo:receiveblock}
+  \DontPrintSemicolon%
+
+  \KwIn{Node's current head block $b_{max}$ at height $h_{max}$}
+
+  Receive block $b$\;\label{algline:recblock}
+  Connect block $b$ in the tree as child of its parent $p$ at height $h_b = h_p +
+  1$\;
+  \If{$h_b > h_{max}$}{\label{algline:height}
+    $h_{max} = h_b$\;
+    $b_{max} = b$\;
+    Compute UTXO for the path leading to $b_{max}$\;
+    Cleanup memory pool\;
+  }
+\end{algorithm}
+
+\section{Network}
+
+To summarize, the Bitcoin network operates by each node in the network executing
+the same set of protocols. All transactions are broadcasted to the network, and
+every node works on collecting new transactions from the network into a block
+and finding a valid nonce for the block. When a node finds the valid nonce, it
+broadcasts the block to the network, adding the block to the end of the chain in
+effect. When another node in the network learns about the new block, it checks
+that all transactions in the block are valid. If they are, it accepts the block
+and works on extending the chain by creating a new block with the hash of the
+accepted block.
+
+\section{Correctness}
 
 Let us now look at how the Bitcoin network solves the doublespending problem.
 Suppose Alice attempts to doublespend by creating two transactions containing
@@ -232,15 +335,16 @@ nodes, leaving only one of Alice’s transactions in the network.
 
 \section{Conclusion}
 
-We discussed in this report the fundamental structure of Bitcoin and how it
-solves the doublesepnding problem. Other aspects of Bitcoin include
-incentivizing miners, reclaiming unnecessary disk space, and combining and
-splitting values in a transaction. You can read more about these topics in the
-original Bitcoin paper~\citep{Nakamoto08}. Further work aims to increase the
-rate of transactions  by establishing micropayment channels between two parties
-outside the blockchain network~\citep{Decker15}. Lastly, the introduction of a
-decentralized system for financial transactions by Bitcoin led to a number of
-other blockchain-based cryptocurrencies such as Ethereum~\citep{Buterin14}.
+This report discusses the fundamental structure of Bitcoin and how it solves the
+doublespending problem. Other aspects of Bitcoin include incentivizing miners,
+reclaiming unnecessary disk space, and scripting. We refer the reader to learn
+more about these topics from the original Bitcoin white paper~\citep{Nakamoto08}
+and lecture notes from ETH Zurich by~\citeauthor{ETH15}. Further work aims to
+increase the rate of transactions  by establishing micropayment channels between
+two parties outside the blockchain network~\citep{Decker15}. Moreover, the
+introduction of a decentralized system for financial transactions by Bitcoin led
+to a number of other blockchain-based cryptocurrencies such as
+Ethereum~\citep{Buterin14}.
 
 \bibliographystyle{plainnat}
 \bibliography{paper.bib}
